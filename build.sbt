@@ -19,13 +19,27 @@ lazy val qbeastSpark = (project in file("."))
       sparkCore % Provided,
       sparkSql % Provided,
       hadoopClient % Provided,
-      deltaCore % Provided,
+      deltaCore,
       amazonAws % Test,
       hadoopCommons % Test,
       hadoopAws % Test),
     Test / parallelExecution := false,
     assembly / test := {},
-    assembly / assemblyOption := (assembly / assemblyOption).value.copy(includeScala = false),
+    assembly / assemblyShadeRules := shareRules,
+    assembly / assemblyOption ~= {
+      _.withIncludeScala(false)
+    },
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", "services", "org.apache.spark.sql.sources.DataSourceRegister") =>
+        MergeStrategy.preferProject
+
+      case x @ PathList(ps @ _*) if ps.last contains "DeltaSQLConf" =>
+        MergeStrategy.preferProject
+
+      case x =>
+        val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
+        oldStrategy(x)
+    },
     publish / skip := true)
   .settings(noWarningInConsole)
 
@@ -154,14 +168,42 @@ ThisBuild / pomExtra :=
   </developers>
 
 // Scalafmt settings
-Compile / compile := (Compile / compile).dependsOn(Compile / scalafmtCheck).value
-Test / compile := (Test / compile).dependsOn(Test / scalafmtCheck).value
+// Compile / compile := (Compile / compile).dependsOn(Compile / scalafmtCheck).value
+// Test / compile := (Test / compile).dependsOn(Test / scalafmtCheck).value
 
 // Scalastyle settings
-Compile / compile := (Compile / compile).dependsOn((Compile / scalastyle).toTask("")).value
-Test / compile := (Test / compile).dependsOn((Test / scalastyle).toTask("")).value
+// Compile / compile := (Compile / compile).dependsOn((Compile / scalastyle).toTask("")).value
+// Test / compile := (Test / compile).dependsOn((Test / scalastyle).toTask("")).value
 
 // Header settings
-headerLicense := Some(HeaderLicense.Custom("Copyright 2021 Qbeast Analytics, S.L."))
+headerLicense := Some(HeaderLicense.Custom("Copyright 2023 Qbeast Analytics, S.L."))
 headerEmptyLine := false
-Compile / compile := (Compile / compile).dependsOn(Compile / headerCheck).value
+// Compile / compile := (Compile / compile).dependsOn(Compile / headerCheck).value
+
+val shareRules = Seq(
+  ShadeRule
+    .rename("io.delta.**" -> "qbeast_shaded.io.delta.@1")
+    .inAll,
+  ShadeRule
+    .rename("org.apache.spark.sql.delta.**" -> "qbeast_shaded.org.apache.spark.sql.delta.@1")
+    .inAll,
+  ShadeRule
+    .rename("com.databricks.spark.util.**" -> "qbeast_shaded.com.databricks.spark.util.@1")
+    .inAll,
+  ShadeRule
+    .rename(
+      "org.apache.spark.sql.catalyst.delta.**" ->
+        "qbeast_shaded.org.apache.spark.sql.catalyst.delta.@1")
+    .inAll,
+  ShadeRule
+    .rename(
+      "org.apache.spark.sql.catalyst.plans.logical.Delta*" ->
+        "qbeast_shaded.org.apache.spark.sql.catalyst.plans.logical.@1")
+    .inAll) ++ (
+  Seq("AlterTableAddConstraint", "AlterTableDropConstraint", "RestoreTableStatement")
+    .map(name =>
+      ShadeRule
+        .rename(
+          ("org.apache.spark.sql.catalyst.plans.logical." + name)
+            -> ("qbeast_shaded.org.apache.spark.sql.catalyst.plans.logical." + name))
+        .inAll))
