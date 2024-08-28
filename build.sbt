@@ -30,7 +30,7 @@ lazy val qbeastHudi = (project in file("./hudi"))
     libraryDependencies ++= Seq(
       sparkCore % Provided,
       hadoopClient % Provided,
-      avro,
+      avro % Provided,
       sparkSql % Provided,
       hudi % Provided,
       apacheCommons % Test,

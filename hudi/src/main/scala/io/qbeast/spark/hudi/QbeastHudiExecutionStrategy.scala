@@ -48,6 +48,7 @@ class QbeastHudiExecutionStrategy[T](
       .withBulkInsertParallelism(numOutputGroups)
       .withProps(getWriteConfig.getProps)
       .build
+    println("I'm HERE BAYBY")
 
     newConfig.setValue(
       HoodieStorageConfig.PARQUET_MAX_FILE_SIZE,
@@ -83,11 +84,16 @@ class QbeastHudiExecutionStrategy[T](
       override def repartitionRecords(
           records: Dataset[Row],
           outputPartitions: Int): Dataset[Row] = {
+
+        LOG.info("Repartition data according to Qbeast algorithm")
+
+
+        println("I'm HERE BAYBY")
+
         val tableId = QTableID(table.getConfig.getTableName)
         val transformers =
           Vector(LinearTransformer("ts", LongDataType), HashTransformer("uuid", StringDataType))
-        val transformations = transformers.map(t => t.makeTransformation(r => r))
-        val rel = Revision.firstRevision(tableId, 10, transformers, transformations)
+        val rel = Revision.firstRevision(tableId, 10, transformers)
 
         val indexStatus = IndexStatus.empty(rel)
         val (qbeastData, tableChanges) = SparkOTreeManager.index(records, indexStatus)

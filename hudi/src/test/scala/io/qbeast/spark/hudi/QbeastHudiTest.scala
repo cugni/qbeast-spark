@@ -14,6 +14,7 @@ class QbeastHudiTest extends QbeastHudiIntegrationTestSpec {
 
   val hudiSparkConf = new SparkConf()
     .setMaster("local[8]")
+    .set("spark.jars.packages", "org.apache.hudi:hudi-spark3.5-bundle_2.12:0.15.0")
     .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     .set("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.hudi.catalog.HoodieCatalog")
     .set("spark.sql.extensions", "org.apache.spark.sql.hudi.HoodieSparkSessionExtension")
@@ -78,7 +79,7 @@ class QbeastHudiTest extends QbeastHudiIntegrationTestSpec {
       .format("hudi")
       .option("hoodie.datasource.write.partitionpath.field", "city")
       .option("hoodie.clustering.inline", "true")
-      .option("hoodie.clustering.inline.max.commits", "2")
+      .option("hoodie.clustering.inline.max.commits", "1")
       // .option("hoodie.clustering.plan.strategy.class", "")
       .option(
         "hoodie.clustering.execution.strategy.class",
