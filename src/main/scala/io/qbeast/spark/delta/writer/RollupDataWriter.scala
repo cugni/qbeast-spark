@@ -66,12 +66,17 @@ object RollupDataWriter
   private type Extract = InternalRow => (InternalRow, Weight, CubeId, CubeId)
   private type WriteRows = Iterator[InternalRow] => Iterator[(IndexFile, TaskStats)]
 
+  def rollupDataset(data: DataFrame, tableChanges: TableChanges): DataFrame = {
+    val extendedData = extendDataWithCubeToRollup(data, tableChanges)
+    extendedData
+  }
+
   override def write(
       tableId: QTableID,
       schema: StructType,
       data: DataFrame,
       tableChanges: TableChanges): IISeq[FileAction] = {
-    val extendedData = extendDataWithCubeToRollup(data, tableChanges)
+    val extendedData = rollupDataset(data, tableChanges)
     val revision = tableChanges.updatedRevision
     val getCubeMaxWeight = { cubeId: CubeId =>
       tableChanges.cubeWeight(cubeId).getOrElse(Weight.MaxValue)
