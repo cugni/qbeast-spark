@@ -24,6 +24,11 @@ import java.math.BigInteger;
 public abstract class CubeKeyFactoryJava {
 
     /**
+     * Constructor
+     */
+    public CubeKeyFactoryJava() {
+    }
+    /**
      * Method to create the cube key for a certain point in the space
      *
      * @param dime coordinates of each dimension
