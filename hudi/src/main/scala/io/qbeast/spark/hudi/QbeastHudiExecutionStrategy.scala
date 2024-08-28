@@ -93,12 +93,14 @@ class QbeastHudiExecutionStrategy[T](
         val tableId = QTableID(table.getConfig.getTableName)
         val transformers =
           Vector(LinearTransformer("ts", LongDataType), HashTransformer("uuid", StringDataType))
-        val rel = Revision.firstRevision(tableId, 10, transformers)
+        val rel = Revision.firstRevision(tableId, 1000, transformers)
 
         val indexStatus = IndexStatus.empty(rel)
         val (qbeastData, tableChanges) = SparkOTreeManager.index(records, indexStatus)
 
         val rolledUp = RollupDataWriter.rollupDataset(qbeastData, tableChanges)
+
+        rolledUp.select(col(QbeastColumns.cubeToRollupColumnName)).show()
 
         rolledUp.repartition(col(QbeastColumns.cubeToRollupColumnName))
 

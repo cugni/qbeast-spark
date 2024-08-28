@@ -10,7 +10,7 @@ object TT extends App {
 
   val columns = Seq("ts", "uuid", "rider", "driver", "fare", "city")
   import spark.implicits._
-  val inserts = spark.range(1000000).map(x => (x, x.toString))
+  val inserts = spark.range(1000000).map(x => MyData(x, x.toString))
 
   (inserts
     .coalesce(1)
