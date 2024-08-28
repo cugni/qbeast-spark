@@ -21,4 +21,8 @@ object Dependencies {
   val hadoopAws = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion
   val fasterxml = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.0"
   val sparkml = "org.apache.spark" %% "spark-mllib" % sparkVersion
+  val hudi = "org.apache.hudi" %% ("hudi-spark" + sparkVersion.replaceAll(
+    "\\.[0-9]+$",
+    "") + "-bundle") % "0.15.0"
+  val avro = "org.apache.avro" % "avro" % "1.8.2"
 }

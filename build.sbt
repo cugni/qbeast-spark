@@ -23,6 +23,16 @@ lazy val qbeastSpark = (project in file("."))
     assembly / assemblyOption := (assembly / assemblyOption).value.copy(includeScala = false))
   .settings(noWarningInConsole)
 
+lazy val qbeastHudi = (project in file("./hudi"))
+  .dependsOn(qbeastSpark)
+  .settings(
+    name := "qbeast-hudi",
+    libraryDependencies ++= Seq(sparkCore % Provided, avro, sparkSql % Provided, hudi % Provided),
+    Test / parallelExecution := false,
+    assembly / test := {},
+    assembly / assemblyOption := (assembly / assemblyOption).value.copy(includeScala = false))
+  .settings(noWarningInConsole)
+
 qbeastSpark / Compile / doc / scalacOptions ++= Seq(
   "-doc-title",
   "qbeast-spark",
