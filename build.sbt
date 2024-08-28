@@ -27,13 +27,23 @@ lazy val qbeastHudi = (project in file("./hudi"))
   .dependsOn(qbeastSpark)
   .settings(
     name := "qbeast-hudi",
-    libraryDependencies ++= Seq(sparkCore % Provided, avro, sparkSql % Provided, hudi % Provided),
+    libraryDependencies ++= Seq(
+      sparkCore % Provided,
+      hadoopClient % Provided,
+      avro,
+      sparkSql % Provided,
+      hudi % Provided,
+      apacheCommons % Test,
+      amazonAws % Test,
+      deltaSpark,
+      hadoopCommons % Test,
+      hadoopAws % Test),
     Test / parallelExecution := false,
     assembly / test := {},
     assembly / assemblyOption := (assembly / assemblyOption).value.copy(includeScala = false))
   .settings(noWarningInConsole)
 
-qbeastSpark / Compile / doc / scalacOptions ++= Seq(
+ThisBuild / Compile / doc / scalacOptions ++= Seq(
   "-doc-title",
   "qbeast-spark",
   "-doc-version",
@@ -54,8 +64,8 @@ ThisBuild / libraryDependencies ++= Seq(
   scalaTest % Test,
   mockito % Test)
 
-Test / javaOptions ++= Seq("-Xmx10G", "-XX:+UseG1GC")
-Test / fork := true
+ThisBuild / Test / javaOptions ++= Seq("-Xmx10G", "-XX:+UseG1GC")
+ThisBuild / Test / fork := true
 
 // Scala compiler settings
 ThisBuild / scalaVersion := "2.12.18"
